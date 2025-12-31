@@ -1,0 +1,16 @@
+# Stage-1 runtime dependencies (install into the existing conda env `pytorch`)
+#   conda activate pytorch
+#   python -m pip install -r requirements.txt
+#
+# NOTE: torch is expected to be provided by the conda env (CUDA build).
+
+monai>=1.4
+nibabel>=5.3
+numpy>=1.24
+pandas>=2.0
+PyYAML>=6.0
+tqdm>=4.66
+tensorboard>=2.15
+matplotlib>=3.8
+scipy>=1.11
+

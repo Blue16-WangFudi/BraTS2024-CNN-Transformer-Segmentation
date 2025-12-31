@@ -1,0 +1,36 @@
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+.DS_Store
+Thumbs.db
+
+# Local datasets / medical images
+/brats2024-small-dataset/
+/brats2024-small-dataset/**/*
+brats2024-small-dataset/
+*.nii
+*.nii.gz
+
+# Paper sources
+/latex/
+latex/
+
+# Outputs / artifacts
+/runs/*
+!/runs/.gitkeep
+/artifacts/*
+!/artifacts/.gitkeep
+
+# Checkpoints
+*.pt
+*.pth
+
+# Logs
+*.log
+
