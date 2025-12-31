@@ -71,3 +71,9 @@ python -m brats24.cli train --config config/smoke.yaml --override train.epochs=3
 
 - `fusion_mode=parallel` is a documented placeholder and raises `NotImplementedError` in Stage-1.
 - No datasets, NIfTI files, LaTeX/paper sources, or `runs/` artifacts are committed.
+
+## Model Options
+
+- `model_name=unet3d`: CNN-only 3D UNet baseline (MONAI).
+- `model_name=cnn_transformer_unet`: our CNN+Transformer fusion model (`fusion_mode=serial|embedded|parallel`).
+- `model_name=unetr` / `model_name=swinunetr`: Transformer-only baselines (best-effort; may be heavier than smoke configs).
