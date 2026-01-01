@@ -59,6 +59,8 @@ python -m brats24.cli train --config config/smoke.yaml
 python -m brats24.cli eval  --config config/smoke.yaml --run_dir runs/smoke
 python -m brats24.cli infer --config config/smoke.yaml --run_dir runs/smoke --case_id <CASE_FOLDER_NAME>
 python -m brats24.cli vis_samples --config config/smoke.yaml
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+python -m brats24.cli train --config config/cloud.yaml
 ```
 
 Config overrides are supported via `--override key=value`, e.g.:
