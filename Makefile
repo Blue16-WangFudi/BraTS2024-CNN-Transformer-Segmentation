@@ -12,7 +12,8 @@ CLOUD_OVERRIDES_NO_TRANSFORMER := --override run_name=$(CLOUD_RUN_NO_TRANSFORMER
 CLOUD_OVERRIDES_NO_REGIONAUX := --override run_name=$(CLOUD_RUN_NO_REGIONAUX) --override enable_region_aux=false --override train.overwrite=true
 
 .PHONY: smoke smoke_unet smoke_ablate_no_gate smoke_ablate_no_transformer smoke_ablate_no_regionaux eval vis_samples env_dump \
-	cloud_train cloud_ablate_no_gate cloud_ablate_no_transformer cloud_ablate_no_regionaux cloud_all cloud_assets cloud_assets_all
+	cloud_train cloud_ablate_no_gate cloud_ablate_no_transformer cloud_ablate_no_regionaux cloud_all cloud_assets cloud_assets_all \
+	cloud_assets_no_gate cloud_assets_no_transformer cloud_assets_no_regionaux
 
 smoke:
 	$(PY) -m brats24.cli train --config config/smoke.yaml
@@ -59,12 +60,33 @@ cloud_assets:
 	$(PY) -m brats24.cli env_dump --output_dir runs/$(CLOUD_RUN)/artifacts/env
 	$(PY) -m brats24.cli eval --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_BASE) --run_dir runs/$(CLOUD_RUN)
 
-cloud_assets_all: cloud_assets
+cloud_assets_no_gate:
 	$(PY) -m tools.export_tb_to_png --tb_dir runs/$(CLOUD_RUN_NO_GATE)/tb --out_dir runs/$(CLOUD_RUN_NO_GATE)/figures
+	$(PY) -m brats24.cli vis_samples --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_GATE) --out_dir runs/$(CLOUD_RUN_NO_GATE)/figures
+	CASE_ID="$$($(PY) -c \"from pathlib import Path; import yaml; cfg=yaml.safe_load(open('$(CLOUD_CONFIG)')); root=Path(cfg['data_root']); print(next(p.name for p in root.iterdir() if p.is_dir()))\")" && \
+	$(PY) -m brats24.cli infer --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_GATE) --run_dir runs/$(CLOUD_RUN_NO_GATE) --case_id $$CASE_ID --out_dir runs/$(CLOUD_RUN_NO_GATE)/figures
+	$(PY) -m brats24.cli dataset_report --config $(CLOUD_CONFIG) --out runs/$(CLOUD_RUN_NO_GATE)/artifacts/dataset_report.json
+	$(PY) -m brats24.cli env_dump --output_dir runs/$(CLOUD_RUN_NO_GATE)/artifacts/env
 	$(PY) -m brats24.cli eval --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_GATE) --run_dir runs/$(CLOUD_RUN_NO_GATE)
+
+cloud_assets_no_transformer:
 	$(PY) -m tools.export_tb_to_png --tb_dir runs/$(CLOUD_RUN_NO_TRANSFORMER)/tb --out_dir runs/$(CLOUD_RUN_NO_TRANSFORMER)/figures
+	$(PY) -m brats24.cli vis_samples --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_TRANSFORMER) --out_dir runs/$(CLOUD_RUN_NO_TRANSFORMER)/figures
+	CASE_ID="$$($(PY) -c \"from pathlib import Path; import yaml; cfg=yaml.safe_load(open('$(CLOUD_CONFIG)')); root=Path(cfg['data_root']); print(next(p.name for p in root.iterdir() if p.is_dir()))\")" && \
+	$(PY) -m brats24.cli infer --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_TRANSFORMER) --run_dir runs/$(CLOUD_RUN_NO_TRANSFORMER) --case_id $$CASE_ID --out_dir runs/$(CLOUD_RUN_NO_TRANSFORMER)/figures
+	$(PY) -m brats24.cli dataset_report --config $(CLOUD_CONFIG) --out runs/$(CLOUD_RUN_NO_TRANSFORMER)/artifacts/dataset_report.json
+	$(PY) -m brats24.cli env_dump --output_dir runs/$(CLOUD_RUN_NO_TRANSFORMER)/artifacts/env
 	$(PY) -m brats24.cli eval --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_TRANSFORMER) --run_dir runs/$(CLOUD_RUN_NO_TRANSFORMER)
+
+cloud_assets_no_regionaux:
 	$(PY) -m tools.export_tb_to_png --tb_dir runs/$(CLOUD_RUN_NO_REGIONAUX)/tb --out_dir runs/$(CLOUD_RUN_NO_REGIONAUX)/figures
+	$(PY) -m brats24.cli vis_samples --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_REGIONAUX) --out_dir runs/$(CLOUD_RUN_NO_REGIONAUX)/figures
+	CASE_ID="$$($(PY) -c \"from pathlib import Path; import yaml; cfg=yaml.safe_load(open('$(CLOUD_CONFIG)')); root=Path(cfg['data_root']); print(next(p.name for p in root.iterdir() if p.is_dir()))\")" && \
+	$(PY) -m brats24.cli infer --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_REGIONAUX) --run_dir runs/$(CLOUD_RUN_NO_REGIONAUX) --case_id $$CASE_ID --out_dir runs/$(CLOUD_RUN_NO_REGIONAUX)/figures
+	$(PY) -m brats24.cli dataset_report --config $(CLOUD_CONFIG) --out runs/$(CLOUD_RUN_NO_REGIONAUX)/artifacts/dataset_report.json
+	$(PY) -m brats24.cli env_dump --output_dir runs/$(CLOUD_RUN_NO_REGIONAUX)/artifacts/env
 	$(PY) -m brats24.cli eval --config $(CLOUD_CONFIG) $(CLOUD_OVERRIDES_NO_REGIONAUX) --run_dir runs/$(CLOUD_RUN_NO_REGIONAUX)
+
+cloud_assets_all: cloud_assets cloud_assets_no_gate cloud_assets_no_transformer cloud_assets_no_regionaux
 
 cloud_all: cloud_train cloud_ablate_no_gate cloud_ablate_no_transformer cloud_ablate_no_regionaux cloud_assets_all
