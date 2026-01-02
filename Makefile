@@ -1,4 +1,14 @@
-PY ?= conda run -n pytorch python
+USE_CONDA ?= 1
+CONDA := $(shell command -v conda 2>/dev/null)
+ifeq ($(USE_CONDA),1)
+  ifeq ($(CONDA),)
+    PY ?= python
+  else
+    PY ?= conda run -n pytorch python
+  endif
+else
+  PY ?= python
+endif
 
 CLOUD_CONFIG ?= config/cloud.yaml
 CLOUD_RUN ?= cloud_placeholder
