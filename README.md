@@ -50,6 +50,59 @@ make vis_samples
 make env_dump
 ```
 
+## Makefile (Step-by-Step)
+
+Local smoke runs (small):
+
+```bash
+# CNN-only baseline
+make smoke_unet
+
+# Our fusion model (serial) smoke
+make smoke
+
+# Ablation: disable transformer
+make smoke_ablate_no_transformer
+```
+
+Cloud/full runs (Linux server):
+
+```bash
+# Base training
+make cloud_train
+
+# Ablations
+make cloud_ablate_no_gate
+make cloud_ablate_no_transformer
+make cloud_ablate_no_regionaux
+```
+
+Generate paper assets (curves/figures/eval/env report):
+
+```bash
+# Base run assets
+make cloud_assets
+
+# All runs (base + all ablations)
+make cloud_assets_all
+```
+
+One-shot full pipeline (train + assets):
+
+```bash
+make cloud_all
+```
+
+Override config/run names if needed:
+
+```bash
+make cloud_all CLOUD_CONFIG=cloud.yaml \
+  CLOUD_RUN=exp_base \
+  CLOUD_RUN_NO_GATE=exp_no_gate \
+  CLOUD_RUN_NO_TRANSFORMER=exp_no_tf \
+  CLOUD_RUN_NO_REGIONAUX=exp_no_regionaux
+```
+
 ## CLI
 
 All commands are routed through `brats24/cli.py`.
