@@ -1,0 +1,13 @@
+mode: grid
+seed: 42
+run_name_prefix: hpo
+
+fixed_overrides:
+  train.epochs: 10
+  train.overwrite: true
+
+params:
+  train.lr: [0.0001, 0.0002, 0.0003]
+  train.weight_decay: [1.0e-5, 1.0e-4]
+  model.base_channels: [16, 24]
+  train.batch_size: [1]

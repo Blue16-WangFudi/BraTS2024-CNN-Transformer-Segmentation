@@ -103,6 +103,25 @@ make cloud_all CLOUD_CONFIG=cloud.yaml \
   CLOUD_RUN_NO_REGIONAUX=exp_no_regionaux
 ```
 
+## Hyperparameter Search (Simple Grid/Random)
+
+Use the built-in HPO runner to launch multiple trials into a separate output folder (`runs_hpo/`).
+
+```bash
+# Run with the default grid in config/hpo.yaml
+python -m tools.hpo --config config/cloud.yaml --space config/hpo.yaml --output_dir runs_hpo
+
+# Or via Makefile
+make hpo
+```
+
+Search space definition (see `config/hpo.yaml`):
+
+- `mode`: `grid` or `random`
+- `params`: list values for grid, or ranges for random
+- `fixed_overrides`: overrides applied to every run
+- `run_name_prefix`: prefix for trial run names
+
 ## CLI
 
 All commands are routed through `brats24/cli.py`.

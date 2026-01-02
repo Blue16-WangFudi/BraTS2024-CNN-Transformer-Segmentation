@@ -23,7 +23,7 @@ CLOUD_OVERRIDES_NO_REGIONAUX := --override run_name=$(CLOUD_RUN_NO_REGIONAUX) --
 
 .PHONY: smoke smoke_unet smoke_ablate_no_gate smoke_ablate_no_transformer smoke_ablate_no_regionaux eval vis_samples env_dump \
 	cloud_train cloud_ablate_no_gate cloud_ablate_no_transformer cloud_ablate_no_regionaux cloud_all cloud_assets cloud_assets_all \
-	cloud_assets_no_gate cloud_assets_no_transformer cloud_assets_no_regionaux
+	cloud_assets_no_gate cloud_assets_no_transformer cloud_assets_no_regionaux hpo
 
 smoke:
 	$(PY) -m brats24.cli train --config config/smoke.yaml
@@ -100,3 +100,6 @@ cloud_assets_no_regionaux:
 cloud_assets_all: cloud_assets cloud_assets_no_gate cloud_assets_no_transformer cloud_assets_no_regionaux
 
 cloud_all: cloud_train cloud_ablate_no_gate cloud_ablate_no_transformer cloud_ablate_no_regionaux cloud_assets_all
+
+hpo:
+	$(PY) -m tools.hpo --config $(CLOUD_CONFIG) --space config/hpo.yaml --output_dir runs_hpo
