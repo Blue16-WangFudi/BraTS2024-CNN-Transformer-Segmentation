@@ -27,6 +27,7 @@ def scan_case_dir(
     modalities: list[str],
     pat_re: dict[str, list[re.Pattern[str]]],
     seg_re: re.Pattern[str],
+    require_label: bool = True,
 ) -> dict[str, Any]:
     nifti_files = sorted(Path(case_dir).glob("*.nii*"))
     label_matches = [p for p in nifti_files if seg_re.search(p.name)]
@@ -48,11 +49,13 @@ def scan_case_dir(
     if label_path is None:
         missing["missing_label"] = 1
 
-    usable = (label_path is not None) and all(mod in img_paths for mod in modalities)
+    has_modalities = all(mod in img_paths for mod in modalities)
+    usable = has_modalities and (label_path is not None or not require_label)
     return {
         "case_id": Path(case_dir).name,
         "case_dir": str(case_dir),
         "usable": usable,
+        "has_label": label_path is not None,
         "image": [str(img_paths[m]) for m in modalities if m in img_paths],
         "label": str(label_path) if label_path is not None else None,
         "missing": missing,
@@ -66,6 +69,7 @@ def scan_brats_dataset(
     modalities: list[str],
     modality_patterns: dict[str, list[str]],
     seg_pattern: str = "seg",
+    require_label: bool = True,
 ) -> dict[str, Any]:
     data_root = Path(data_root)
     nii_files = list(data_root.glob("**/*.nii*"))
@@ -76,7 +80,15 @@ def scan_brats_dataset(
 
     cases = []
     for case_dir in case_dirs:
-        cases.append(scan_case_dir(case_dir=case_dir, modalities=modalities, pat_re=pat_re, seg_re=seg_re))
+        cases.append(
+            scan_case_dir(
+                case_dir=case_dir,
+                modalities=modalities,
+                pat_re=pat_re,
+                seg_re=seg_re,
+                require_label=require_label,
+            )
+        )
 
     return {"total_case_dirs": len(case_dirs), "cases": cases}
 
@@ -87,12 +99,14 @@ def build_datalist(
     modalities: list[str],
     modality_patterns: dict[str, list[str]],
     seg_pattern: str,
+    require_label: bool = True,
 ) -> list[dict[str, Any]]:
     scan = scan_brats_dataset(
         data_root=data_root,
         modalities=modalities,
         modality_patterns=modality_patterns,
         seg_pattern=seg_pattern,
+        require_label=require_label,
     )
     out = []
     for c in scan["cases"]:

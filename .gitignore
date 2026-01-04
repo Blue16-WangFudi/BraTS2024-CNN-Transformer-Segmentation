@@ -1,36 +1,68 @@
+# ------------------------------
+# Runtime outputs
+# ------------------------------
+runs/
+runs_hpo/
+logs/
+outputs/
+checkpoints/
+artifacts/
+wandb/
+mlruns/
+
+# ------------------------------
+# Datasets & caches
+# ------------------------------
+brats2024-small-dataset/
+/data/
+/dataset/
+*.npy
+*.npz
+*.nii
+*.nii.gz
+
+# ------------------------------
+# LaTeX
+# ------------------------------
+latex/
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+build/
+
+# ------------------------------
+# Python
+# ------------------------------
 __pycache__/
 *.py[cod]
-*.pyd
-*.so
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .ipynb_checkpoints/
 
-.DS_Store
-Thumbs.db
-
-# Local datasets / medical images
-/brats2024-small-dataset/
-/brats2024-small-dataset/**/*
-brats2024-small-dataset/
-*.nii
-*.nii.gz
-
-# Paper sources
-/latex/
-latex/
-
-# Outputs / artifacts
-/runs/*
-!/runs/.gitkeep
-/artifacts/*
-!/artifacts/.gitkeep
-
-# Checkpoints
+# ------------------------------
+# Model checkpoints / weights
+# ------------------------------
 *.pt
 *.pth
+*.ckpt
 
-# Logs
-*.log
+# ------------------------------
+# Environments
+# ------------------------------
+.venv/
+venv/
+.env
+*.egg-info/
 
+# ------------------------------
+# System
+# ------------------------------
+.DS_Store
+Thumbs.db

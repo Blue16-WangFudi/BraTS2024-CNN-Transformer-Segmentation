@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "BraTS 2024 CNN-Transformer Segmentation"
+message: "If you use this software, please cite it."
+type: software
+authors:
+  - family-names: Wang
+    given-names: Fudi
+repository-code: "https://github.com/Blue16-WangFudi/BraTS2024-CNN-Transformer-Segmentation"
+license: MIT

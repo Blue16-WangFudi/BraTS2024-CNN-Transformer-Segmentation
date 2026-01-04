@@ -1,153 +1,150 @@
-# BraTS2024 CNN-Transformer Segmentation (Stage-1)
+# BraTS 2024 CNN-Transformer Segmentation
 
-Stage-1 delivers a reproducible **local** 3D multi-modal MRI segmentation codebase for BraTS2024 with:
+A PyTorch/MONAI codebase for 3D multi-modal brain tumor segmentation on the BraTS 2024 dataset, featuring a CNN-Transformer hybrid UNet and several baselines.
 
-- Baselines: **3D UNet (CNN-only)**, **UNETR/SwinUNETR (Transformer-only, best-effort)**
-- Our model: **CNNTransformerUNet** with explicit fusion modes:
-  - `fusion_mode=serial` (CNN bottleneck → tokens → Transformer → reshape → fuse)
-  - `fusion_mode=embedded` (Transformer blocks inserted at one intermediate CNN scale)
-  - `fusion_mode=parallel` placeholder API only (**NotImplementedError**, Stage-2)
-- YAML-driven ablations: `enable_modality_gate`, `enable_transformer`, `enable_region_aux`, `enable_postprocess`, `fusion_mode`
-- Local smoke runs produce:
-  - `runs/<run_name>/metrics/metrics.csv`
-  - TensorBoard scalars under `runs/<run_name>/tb/`
-  - PNG paper assets under `runs/<run_name>/figures/`
-  - env dump under `runs/<run_name>/artifacts/env/`
-  - dataset report under `artifacts/dataset_report.json` (also copied into the run)
+## Key Features
 
-## Environment
+- Hybrid `CNNTransformerUNet` with configurable fusion (`serial` or `embedded`)
+- Optional modality gating and modality dropout for robustness
+- Baselines via MONAI: 3D UNet, UNETR, SwinUNETR
+- YAML configs + `--override` for experiments and ablations
+- Reproducible run directories with checkpoints, metrics, and TensorBoard logs
 
-Use the existing conda env (do not create a new one):
+## Method Overview
+
+`CNNTransformerUNet` is a 3D UNet-style encoder/decoder with an optional Transformer module:
+
+- `fusion_mode=serial`: Transformer processes bottleneck tokens and fuses back into the bottleneck feature map
+- `fusion_mode=embedded`: Transformer blocks are inserted at an intermediate CNN scale
+- `fusion_mode=parallel`: reserved for future work and raises `NotImplementedError`
+
+## Installation
+
+**Requirements**
+
+- Python 3.10+
+- PyTorch (CPU or CUDA)
+
+**Install dependencies**
 
 ```bash
-conda activate pytorch
 python -m pip install -r requirements.txt
 ```
 
-## Dataset
+PyTorch must be installed separately (recommended) using the official instructions:
+https://pytorch.org/get-started/locally/
 
-Place the dataset at `brats2024-small-dataset/` (already present in this repo but **gitignored**).
+## Data
 
-Each case folder should contain 4 modalities and 1 label mask. Filenames are auto-discovered (case-insensitive):
+Download BraTS 2024 from Kaggle:
+https://www.kaggle.com/competitions/brats2024
 
-- Modalities: `t1`, `t1c/t1ce`, `t2`, `flair` OR BraTS-style `t1n/t1c/t2w/t2f`
-- Label: contains `seg`
+Set `DATASET_DIR` to the extracted dataset root, or place the dataset at `./brats2024-small-dataset` (default).
 
-If any required file is missing, the case is skipped and reported.
+Expected structure (one directory per case):
 
-## Quickstart (Makefile)
-
-```bash
-make smoke_unet
-make smoke
-make smoke_ablate_no_transformer
+```text
+brats2024-small-dataset/
+  BraTS-GLI-02062-100/
+    BraTS-GLI-02062-100-t1n.nii.gz
+    BraTS-GLI-02062-100-t1c.nii.gz
+    BraTS-GLI-02062-100-t2w.nii.gz
+    BraTS-GLI-02062-100-t2f.nii.gz
+    BraTS-GLI-02062-100-seg.nii.gz
 ```
 
-Other helpers:
+Modality/label files are auto-discovered using the regex fragments in the config (`modalities.*.patterns` and `seg_pattern`).
+See `docs/DATA.md` for details and validation commands.
+
+## Quickstart (No Data Required)
+
+Run the smoke test (imports + a tiny forward pass):
 
 ```bash
-make vis_samples
-make env_dump
+python -m tests.smoke_test
 ```
 
-## Makefile (Step-by-Step)
-
-Local smoke runs (small):
+Print model parameter statistics (builds the model on CPU):
 
 ```bash
-# CNN-only baseline
-make smoke_unet
-
-# Our fusion model (serial) smoke
-make smoke
-
-# Ablation: disable transformer
-make smoke_ablate_no_transformer
+python -m brats24.cli model_stats --config configs/default.yaml --device cpu
 ```
 
-Cloud/full runs (Linux server):
+## Training
+
+Run a small training job (requires data):
 
 ```bash
-# Base training
-make cloud_train
-
-# Ablations
-make cloud_ablate_no_gate
-make cloud_ablate_no_transformer
-make cloud_ablate_no_regionaux
+python scripts/train.py --config configs/smoke.yaml --data_dir brats2024-small-dataset
 ```
 
-Generate paper assets (curves/figures/eval/env report):
+Common overrides:
 
 ```bash
-# Base run assets
-make cloud_assets
-
-# All runs (base + all ablations)
-make cloud_assets_all
+python scripts/train.py --config configs/smoke.yaml --data_dir brats2024-small-dataset --override run_name=smoke --override train.overwrite=true --override model_name=cnn_transformer_unet --override fusion_mode=embedded
 ```
 
-One-shot full pipeline (train + assets):
+## Evaluation
+
+Evaluate a run directory (writes `runs/<run_name>/metrics/eval_metrics.json`):
 
 ```bash
-make cloud_all
+python scripts/eval.py --config configs/smoke.yaml --run_dir runs/smoke --ckpt best.pt --data_dir brats2024-small-dataset
 ```
 
-Override config/run names if needed:
+## Inference
+
+Run inference on a dataset root directory (automatically selects the first usable case):
 
 ```bash
-make cloud_all CLOUD_CONFIG=cloud.yaml \
-  CLOUD_RUN=exp_base \
-  CLOUD_RUN_NO_GATE=exp_no_gate \
-  CLOUD_RUN_NO_TRANSFORMER=exp_no_tf \
-  CLOUD_RUN_NO_REGIONAUX=exp_no_regionaux
+python scripts/infer.py --config configs/smoke.yaml \
+  --ckpt runs/smoke/checkpoints/best.pt \
+  --input brats2024-small-dataset \
+  --output pred.nii.gz
+```
+`scripts/infer.py` also supports a single 4D NIfTI file input (modalities stacked as 4 channels).
+
+## Run Artifacts
+
+Each training run is written to `runs/<run_name>/`:
+
+- `checkpoints/best.pt`, `checkpoints/last.pt`
+- `metrics/metrics.csv` (per-epoch training/validation metrics)
+- `metrics/eval_metrics.json` (evaluation summary)
+- `tb/` (TensorBoard event files)
+- `figures/` (exported plots and sample visualizations, when enabled)
+- `artifacts/` (environment dump, dataset report, split metadata)
+
+## Reproducibility
+
+- Random seeds are controlled by `seed` in the config and applied via MONAI determinism utilities.
+- For a detailed checklist (versions, hardware, output recovery), see `docs/REPRODUCIBILITY.md`.
+
+## Project Structure
+
+```text
+.
+|-- brats24/          # library code (models, training, data, utils)
+|-- configs/          # YAML experiment configs
+|-- scripts/          # train/eval/infer entrypoints
+|-- tools/            # optional utilities (HPO, TensorBoard export, etc.)
+|-- docs/             # dataset + reproducibility notes
+|-- tests/            # lightweight smoke tests
+|-- Makefile
+|-- requirements.txt
+`-- README.md
 ```
 
-## Hyperparameter Search (Simple Grid/Random)
+## License
 
-Use the built-in HPO runner to launch multiple trials into a separate output folder (`runs_hpo/`).
+MIT License. See `LICENSE`.
 
-```bash
-# Run with the default grid in config/hpo.yaml
-python -m tools.hpo --config config/cloud.yaml --space config/hpo.yaml --output_dir runs_hpo
+## Citation
 
-# Or via Makefile
-make hpo
-```
+If you use this codebase in academic work, please use `CITATION.cff`.
 
-Search space definition (see `config/hpo.yaml`):
+## Acknowledgements
 
-- `mode`: `grid` or `random`
-- `params`: list values for grid, or ranges for random
-- `fixed_overrides`: overrides applied to every run
-- `run_name_prefix`: prefix for trial run names
-
-## CLI
-
-All commands are routed through `brats24/cli.py`.
-
-```bash
-python -m brats24.cli train --config config/smoke.yaml
-python -m brats24.cli eval  --config config/smoke.yaml --run_dir runs/smoke
-python -m brats24.cli infer --config config/smoke.yaml --run_dir runs/smoke --case_id <CASE_FOLDER_NAME>
-python -m brats24.cli vis_samples --config config/smoke.yaml
-export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-python -m brats24.cli train --config config/cloud.yaml
-```
-
-Config overrides are supported via `--override key=value`, e.g.:
-
-```bash
-python -m brats24.cli train --config config/smoke.yaml --override train.epochs=3 --override fusion_mode=embedded
-```
-
-## Notes
-
-- `fusion_mode=parallel` is a documented placeholder and raises `NotImplementedError` in Stage-1.
-- No datasets, NIfTI files, LaTeX/paper sources, or `runs/` artifacts are committed.
-
-## Model Options
-
-- `model_name=unet3d`: CNN-only 3D UNet baseline (MONAI).
-- `model_name=cnn_transformer_unet`: our CNN+Transformer fusion model (`fusion_mode=serial|embedded|parallel`).
-- `model_name=unetr` / `model_name=swinunetr`: Transformer-only baselines (best-effort; may be heavier than smoke configs).
+- The BraTS organizers and dataset contributors
+- Kaggle for dataset distribution
+- MONAI and PyTorch communities
