@@ -7,7 +7,7 @@ from brats24.utils.config import load_config
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(prog="brats24", description="BraTS2024 3D segmentation (Stage-1)")
+    p = argparse.ArgumentParser(prog="brats24", description="BraTS 2024 3D segmentation")
     sp = p.add_subparsers(dest="command", required=True)
 
     cfg_parent = argparse.ArgumentParser(add_help=False)

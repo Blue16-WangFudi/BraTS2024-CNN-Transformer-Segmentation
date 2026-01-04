@@ -118,12 +118,11 @@ class EmbeddedTransformerBlock(nn.Module):
 
 class ParallelFusionPlaceholder(nn.Module):
     """
-    Stage-1 placeholder interface for future parallel CNN+Transformer fusion.
+    Placeholder interface for a future parallel CNN+Transformer fusion mode.
 
-    Stage-2 will implement a true dual-stream model (CNN branch + Transformer branch)
-    with multi-scale feature interactions and fusion. For Stage-1 we keep the config/API
-    stable and explicitly fail fast.
+    This mode is intentionally not implemented yet; selecting `fusion_mode="parallel"`
+    fails fast instead of silently producing incorrect results.
     """
 
     def forward(self, x: torch.Tensor, bottleneck: torch.Tensor) -> torch.Tensor:  # noqa: ARG002
-        raise NotImplementedError("fusion_mode='parallel' is a Stage-2 feature (cloud training).")
+        raise NotImplementedError("fusion_mode='parallel' is not implemented.")

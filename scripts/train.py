@@ -15,6 +15,7 @@ def _parse_args() -> argparse.Namespace:
         default=[],
         help="Override config with dotted keys, e.g. train.epochs=2 (repeatable).",
     )
+    p.add_argument("--data_dir", type=str, default=None, help="Override data_root.")
     p.add_argument("--device", type=str, default="cuda", help="cuda|cpu|cuda:0")
     return p.parse_args()
 
@@ -22,6 +23,8 @@ def _parse_args() -> argparse.Namespace:
 def main() -> None:
     args = _parse_args()
     cfg = load_config(args.config, overrides=args.override)
+    if args.data_dir:
+        cfg["data_root"] = args.data_dir
     run_dir = train(cfg, device=args.device)
     print(f"Run directory: {run_dir}")
 

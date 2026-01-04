@@ -46,6 +46,20 @@ def _parse_args() -> argparse.Namespace:
 def _load_input(cfg: dict[str, Any], input_path: Path) -> tuple[torch.Tensor, Path]:
     t = build_infer_transforms(cfg)
     if input_path.is_dir():
+        case_dir = input_path
+        if not list(case_dir.glob("*.nii*")):
+            candidates = sorted([p for p in case_dir.iterdir() if p.is_dir()], key=lambda p: p.name)
+            case_dir = None
+            for cand in candidates:
+                if not list(cand.glob("*.nii*")):
+                    continue
+                try:
+                    _img, _ref = _load_input(cfg, cand)
+                    return _img, _ref
+                except Exception:
+                    continue
+            raise RuntimeError(f"No usable case directories found under: {input_path}")
+
         modalities = list(cfg["modalities"].keys())
         modality_patterns = {k: v["patterns"] for k, v in cfg["modalities"].items()}
         seg_pattern = cfg.get("seg_pattern", "seg")
@@ -54,7 +68,7 @@ def _load_input(cfg: dict[str, Any], input_path: Path) -> tuple[torch.Tensor, Pa
         pat_re = {mod: [re.compile(p, flags=re.IGNORECASE) for p in pats] for mod, pats in modality_patterns.items()}
         seg_re = re.compile(seg_pattern, flags=re.IGNORECASE)
         case = scan_case_dir(
-            case_dir=input_path,
+            case_dir=case_dir,
             modalities=modalities,
             pat_re=pat_re,
             seg_re=seg_re,

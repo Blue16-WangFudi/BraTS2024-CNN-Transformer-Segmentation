@@ -1,8 +1,10 @@
-# Stage-1 runtime dependencies (install into the existing conda env `pytorch`)
-#   conda activate pytorch
-#   python -m pip install -r requirements.txt
+# Runtime dependencies.
 #
-# NOTE: torch is expected to be provided by the conda env (CUDA build).
+# Install PyTorch (CPU or CUDA) following the official instructions:
+#   https://pytorch.org/get-started/locally/
+#
+# Then install the remaining dependencies:
+#   python -m pip install -r requirements.txt
 
 monai>=1.4
 nibabel>=5.3
@@ -13,4 +15,3 @@ tqdm>=4.66
 tensorboard>=2.15
 matplotlib>=3.8
 scipy>=1.11
-
