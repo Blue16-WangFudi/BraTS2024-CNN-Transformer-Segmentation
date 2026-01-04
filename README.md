@@ -58,6 +58,12 @@ See `docs/DATA.md` for details and validation commands.
 
 ## Quickstart (No Data Required)
 
+Run the smoke test (imports + a tiny forward pass):
+
+```bash
+python -m tests.smoke_test
+```
+
 Print model parameter statistics (builds the model on CPU):
 
 ```bash

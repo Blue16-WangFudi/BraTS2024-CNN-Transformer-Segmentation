@@ -58,3 +58,11 @@ Each run is written to `runs/<run_name>/`:
 
 - Confirm `data_root` points to the dataset root.
 - Run `python scripts/download_data.py --check` and review the reported `usable` count.
+
+**Windows: OpenMP duplicate runtime error**
+
+If you see an error like `libiomp5md.dll already initialized`, set:
+
+```powershell
+$env:KMP_DUPLICATE_LIB_OK="TRUE"
+```
