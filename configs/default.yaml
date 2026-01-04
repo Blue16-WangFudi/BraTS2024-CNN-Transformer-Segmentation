@@ -1,0 +1,85 @@
+seed: 42
+
+# Path to the BraTS dataset root directory.
+# - Default: ./brats2024-small-dataset (recommended for local experiments)
+# - Override via env var: DATASET_DIR
+# - Override via CLI: --override data_root=/path/to/brats
+data_root: brats2024-small-dataset
+
+# Output root for runs (TensorBoard, checkpoints, metrics, figures).
+output_dir: runs
+run_name: baseline
+
+# Models:
+# - unet3d               (CNN baseline, MONAI)
+# - unetr / swinunetr    (Transformer baselines, MONAI)
+# - cnn_transformer_unet (Hybrid, this repo)
+model_name: cnn_transformer_unet
+fusion_mode: serial
+
+enable_modality_gate: true
+enable_transformer: true
+enable_region_aux: true
+enable_postprocess: false
+
+num_classes: 4
+label_remap:
+  4: 3
+
+modalities:
+  t1:
+    patterns: ["t1n", "t1w", "t1"]
+  t1ce:
+    patterns: ["t1ce", "t1c"]
+  t2:
+    patterns: ["t2w", "t2"]
+  flair:
+    patterns: ["t2f", "flair"]
+seg_pattern: "seg"
+
+split:
+  method: random
+  seed: 42
+  train_frac: 0.9
+  val_frac: 0.1
+  max_train_cases: null
+  max_val_cases: null
+
+train:
+  epochs: 50
+  batch_size: 1
+  patch_size: [96, 96, 96]
+  samples_per_volume: 2
+  num_workers: 4
+  lr: 0.0002
+  weight_decay: 0.00001
+  amp: true
+  overwrite: false
+
+model:
+  base_channels: 32
+  modality_dropout_p: 0.2
+  transformer:
+    num_layers: 2
+    num_heads: 4
+    dim_feedforward: 512
+    dropout: 0.1
+    pos_encoding: learned
+  embedded:
+    scale: 8
+
+loss:
+  dice_weight: 1.0
+  ce_weight: 1.0
+  region_aux_weight: 0.2
+  regions:
+    WT: [1, 2, 3]
+    TC: [1, 3]
+    ET: [3]
+
+infer:
+  sw_batch_size: 1
+  overlap: 0.5
+
+postprocess:
+  method: largest_cc

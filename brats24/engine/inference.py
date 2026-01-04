@@ -53,7 +53,7 @@ def infer(
     seg_pattern = cfg.get("seg_pattern", "seg")
     pat_re = {mod: [re.compile(p, flags=re.IGNORECASE) for p in pats] for mod, pats in modality_patterns.items()}
     seg_re = re.compile(seg_pattern, flags=re.IGNORECASE)
-    case = scan_case_dir(case_dir=case_path, modalities=modalities, pat_re=pat_re, seg_re=seg_re)
+    case = scan_case_dir(case_dir=case_path, modalities=modalities, pat_re=pat_re, seg_re=seg_re, require_label=False)
     if not case.get("usable", False):
         raise RuntimeError(f"Case not usable: {case['case_id']} (missing={case.get('missing')})")
 
@@ -89,4 +89,3 @@ def infer(
 
     save_json(out_root / f"{case['case_id']}_infer.json", out)
     return out
-

@@ -10,7 +10,7 @@ else
   PY ?= python
 endif
 
-CLOUD_CONFIG ?= config/cloud.yaml
+CLOUD_CONFIG ?= configs/cloud.yaml
 CLOUD_RUN ?= cloud_placeholder
 CLOUD_RUN_NO_GATE ?= cloud_no_gate
 CLOUD_RUN_NO_TRANSFORMER ?= cloud_no_transformer
@@ -26,25 +26,25 @@ CLOUD_OVERRIDES_NO_REGIONAUX := --override run_name=$(CLOUD_RUN_NO_REGIONAUX) --
 	cloud_assets_no_gate cloud_assets_no_transformer cloud_assets_no_regionaux hpo
 
 smoke:
-	$(PY) -m brats24.cli train --config config/smoke.yaml
+        $(PY) -m brats24.cli train --config configs/smoke.yaml
 
 smoke_unet:
-	$(PY) -m brats24.cli train --config config/smoke.yaml --override model_name=unet3d --override run_name=smoke_unet --override train.overwrite=true
+        $(PY) -m brats24.cli train --config configs/smoke.yaml --override model_name=unet3d --override run_name=smoke_unet --override train.overwrite=true       
 
 smoke_ablate_no_gate:
-	$(PY) -m brats24.cli train --config config/smoke_ablate_no_gate.yaml
+        $(PY) -m brats24.cli train --config configs/smoke_ablate_no_gate.yaml    
 
 smoke_ablate_no_transformer:
-	$(PY) -m brats24.cli train --config config/smoke_ablate_no_transformer.yaml
+        $(PY) -m brats24.cli train --config configs/smoke_ablate_no_transformer.yaml
 
 smoke_ablate_no_regionaux:
-	$(PY) -m brats24.cli train --config config/smoke_ablate_no_regionaux.yaml
+        $(PY) -m brats24.cli train --config configs/smoke_ablate_no_regionaux.yaml
 
 eval:
-	$(PY) -m brats24.cli eval --config config/local.yaml --run_dir $(RUN_DIR)
+        $(PY) -m brats24.cli eval --config configs/local.yaml --run_dir $(RUN_DIR)
 
 vis_samples:
-	$(PY) -m brats24.cli vis_samples --config config/local.yaml
+        $(PY) -m brats24.cli vis_samples --config configs/local.yaml
 
 env_dump:
 	$(PY) -m brats24.cli env_dump --output_dir runs/_env_dump
@@ -102,4 +102,4 @@ cloud_assets_all: cloud_assets cloud_assets_no_gate cloud_assets_no_transformer 
 cloud_all: cloud_train cloud_ablate_no_gate cloud_ablate_no_transformer cloud_ablate_no_regionaux cloud_assets_all
 
 hpo:
-	$(PY) -m tools.hpo --config $(CLOUD_CONFIG) --space config/hpo.yaml --output_dir runs_hpo
+        $(PY) -m tools.hpo --config $(CLOUD_CONFIG) --space configs/hpo.yaml --output_dir runs_hpo

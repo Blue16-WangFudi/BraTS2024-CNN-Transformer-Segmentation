@@ -1,9 +1,8 @@
 seed: 42
 
-# Placeholder for Stage-2 cloud training. Do not run large jobs in Stage-1.
-data_root: /brats2024-small-dataset
+data_root: brats2024-small-dataset
 output_dir: runs
-run_name: cloud_placeholder
+run_name: train_full
 
 model_name: cnn_transformer_unet
 fusion_mode: serial
